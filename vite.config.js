@@ -1,0 +1,1 @@
+export default {base:'./',build:{outDir:'docs',emptyOutDir:true,chunkSizeWarningLimit:5000,rollupOptions:{output:{entryFileNames:'assets/app-[hash].js',chunkFileNames:'assets/chunk-[hash].js',assetFileNames:'assets/asset-[hash][extname]'}}}};

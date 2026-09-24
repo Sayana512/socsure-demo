@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const snapshot=JSON.parse(fs.readFileSync(new URL('./public/demo-snapshot.json',import.meta.url)));
+globalThis.document={baseURI:'https://example.github.io/socsure-demo/'};
+let requested='';globalThis.fetch=async url=>{requested=String(url);return {ok:true,json:async()=>structuredClone(snapshot)}};
+const storage=new Map();globalThis.localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)};
+const {api}=await import('./src/demo-api.js');
+const state=await api('/state');assert.equal(state.counts.cases,1140);assert.equal(requested,'https://example.github.io/socsure-demo/demo-snapshot.json');assert(!state.records);
+const pack=await api('/review?budget=20&period=2026-06');assert.equal(pack.selected.length,20);assert(new Set(pack.selected.map(f=>f.finding_type)).size>=8);
+const f=pack.selected.find(f=>f.case_id);const ev=await api(`/findings/${f.finding_id}/evidence`);assert.equal(ev.cases[0].case_id,f.case_id);assert(ev.actions.length);
+await api(`/findings/${f.finding_id}/decision`,{method:'POST',body:JSON.stringify({decision:'Confirm',notes:'Demo review'})});
+assert.equal((await api('/state')).decision_events.length,1);assert(!(await api('/review?budget=20&period=2026-06')).selected.some(x=>x.finding_id===f.finding_id));
+assert.equal((await api('/audit/export')).decisions[0].notes,'Demo review');
+await assert.rejects(api('/review?budget=999'));
+await assert.rejects(api('/analyze',{method:'POST'}));await assert.rejects(api('/upload',{method:'POST'}));
+await api('/demo',{method:'POST'});assert.equal((await api('/state')).decision_events.length,0);
+console.log('PASS: project URL paths, data, diverse review, evidence, browser decisions, audit, reset, unavailable analysis/upload and invalid budget.');

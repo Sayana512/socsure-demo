@@ -1,0 +1,1 @@
+{"name":"socsure-frontend","version":"1.0.0","private":true,"type":"module","scripts":{"dev":"vite --host 127.0.0.1","build":"vite build"},"dependencies":{"lucide-react":"1.31.0","plotly.js-dist-min":"^2.35.2","react":"19.2.6","react-dom":"19.2.6"},"devDependencies":{"vite":"8.0.13"}}
